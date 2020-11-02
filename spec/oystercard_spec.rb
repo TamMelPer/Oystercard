@@ -9,4 +9,10 @@ describe OysterCard do
     expect(subject.balance).to eq 0
   end
 
+  describe "#top_up" do
+    it "allows the user to add money" do
+      subject.top_up(5)
+      expect(subject.balance).to eq 5
+    end
+  end
 end
