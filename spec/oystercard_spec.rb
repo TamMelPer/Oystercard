@@ -10,7 +10,7 @@ describe OysterCard do
   end
 
   it "initialized card is not on a journey" do
-    expect(subject.journey).to eq false
+    expect(subject.journey).to eq nil
   end
 
   describe "#top_up" do
@@ -34,22 +34,30 @@ describe OysterCard do
   end
 
   describe "#touch_in" do
+    let(:station) { double :station }
     it "responds to #touch_in" do
       expect(subject).to respond_to :touch_in
     end
+    it "remembers the station at touch_in" do
+      subject.top_up(5)
+      subject.touch_in(station)
+      expect(subject.entry_station).not_to eq nil
+    end
     it "when touch_in, the journey has started" do
       subject.top_up(OysterCard::MIN_BALANCE)
-      subject.touch_in
+      subject.touch_in(station)
       expect(subject.in_journey?).to eq true
     end
     it "checks that there is the min amount needed" do
       subject.top_up(OysterCard::MIN_BALANCE)
       subject.deduct(0.50)
-      expect { subject.touch_in }.to raise_error(RuntimeError, "Not enough funds")
+      expect { subject.touch_in(station) }.to raise_error(RuntimeError, "Not enough funds")
     end
+
   end
 
   describe "#touch_out" do
+    let(:station) { double :station }
     it "responds to #touch_out}" do
       expect(subject).to respond_to :touch_out
     end
@@ -59,7 +67,7 @@ describe OysterCard do
     end
     it "deducts the min amount from the card" do
       subject.top_up(5)
-      subject.touch_in
+      subject.touch_in(station)
       expect{ subject.touch_out }.to change {subject.balance}.by(-OysterCard::MIN_CHARGE)
     end
   end
