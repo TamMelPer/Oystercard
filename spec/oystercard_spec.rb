@@ -1,6 +1,8 @@
 require 'oystercard'
 
 describe OysterCard do
+  let(:station) { double :station }
+
   it "created an instance of OysterCard" do
     expect(subject).to be_an_instance_of OysterCard
   end
@@ -11,6 +13,10 @@ describe OysterCard do
 
   it "initialized card is not on a journey" do
     expect(subject.journey).to eq nil
+  end
+
+  it "initialized card has an empty journey history" do
+    expect(subject.journey_history).to be_instance_of Array
   end
 
   describe "#top_up" do
@@ -28,20 +34,20 @@ describe OysterCard do
   describe "#deduct" do
     it "reduces the oyster card balance" do
       subject.top_up(10)
-      subject.deduct(5)
-      expect(subject.balance).to eq 5
+      subject.touch_out(station)
+      expect(subject.balance).to eq 9
     end
   end
 
   describe "#touch_in" do
-    let(:station) { double :station }
+#    let(:station) { double :station }
     it "responds to #touch_in" do
       expect(subject).to respond_to :touch_in
     end
-    it "remembers the station at touch_in" do
+    it "stores/remembers the station at touch_in" do
       subject.top_up(5)
       subject.touch_in(station)
-      expect(subject.entry_station).not_to eq nil
+      expect(subject.entry_station).to eq station
     end
     it "when touch_in, the journey has started" do
       subject.top_up(OysterCard::MIN_BALANCE)
@@ -50,25 +56,33 @@ describe OysterCard do
     end
     it "checks that there is the min amount needed" do
       subject.top_up(OysterCard::MIN_BALANCE)
-      subject.deduct(0.50)
+      subject.touch_out(station)
       expect { subject.touch_in(station) }.to raise_error(RuntimeError, "Not enough funds")
     end
 
   end
 
   describe "#touch_out" do
-    let(:station) { double :station }
+#    let(:station) { double :station }
     it "responds to #touch_out}" do
       expect(subject).to respond_to :touch_out
     end
     it "when touch_out, the journey will have ended" do
-      subject.touch_out
+      subject.touch_out(station)
       expect(subject.in_journey?).to eq false
     end
     it "deducts the min amount from the card" do
       subject.top_up(5)
       subject.touch_in(station)
-      expect{ subject.touch_out }.to change {subject.balance}.by(-OysterCard::MIN_CHARGE)
+      expect{ subject.touch_out(station) }.to change {subject.balance}.by(-OysterCard::MIN_CHARGE)
     end
+    it "stores/remembers the exit station at touch out" do
+      subject.top_up(5)
+      subject.touch_in(station)
+      subject.touch_out(station)
+      expect(subject.exit_station).to eq station
+    end
+
+
   end
 end
