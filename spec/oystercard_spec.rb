@@ -1,7 +1,9 @@
 require 'oystercard'
 
 describe OysterCard do
-  let(:station) { double :station }
+  let(:entry_station) { double :station }
+  let(:exit_station) { double :station }
+  let(:journey) { {entry_station: entry_station, exit_station: exit_station} }
 
   it "created an instance of OysterCard" do
     expect(subject).to be_an_instance_of OysterCard
@@ -15,8 +17,8 @@ describe OysterCard do
     expect(subject.journey).to eq nil
   end
 
-  it "initialized card has an empty journey history" do
-    expect(subject.journey_history).to be_instance_of Array
+  it "initialized card has an empty journey history array" do
+    expect(subject.journey_history).to be_empty
   end
 
   describe "#top_up" do
@@ -34,7 +36,7 @@ describe OysterCard do
   describe "#deduct" do
     it "reduces the oyster card balance" do
       subject.top_up(10)
-      subject.touch_out(station)
+      subject.touch_out(exit_station)
       expect(subject.balance).to eq 9
     end
   end
@@ -46,18 +48,18 @@ describe OysterCard do
     end
     it "stores/remembers the station at touch_in" do
       subject.top_up(5)
-      subject.touch_in(station)
-      expect(subject.entry_station).to eq station
+      subject.touch_in(entry_station)
+      expect(subject.entry_station).to eq entry_station
     end
     it "when touch_in, the journey has started" do
       subject.top_up(OysterCard::MIN_BALANCE)
-      subject.touch_in(station)
+      subject.touch_in(entry_station)
       expect(subject.in_journey?).to eq true
     end
     it "checks that there is the min amount needed" do
       subject.top_up(OysterCard::MIN_BALANCE)
-      subject.touch_out(station)
-      expect { subject.touch_in(station) }.to raise_error(RuntimeError, "Not enough funds")
+      subject.touch_out(exit_station)
+      expect { subject.touch_in(entry_station) }.to raise_error(RuntimeError, "Not enough funds")
     end
 
   end
@@ -68,21 +70,25 @@ describe OysterCard do
       expect(subject).to respond_to :touch_out
     end
     it "when touch_out, the journey will have ended" do
-      subject.touch_out(station)
+      subject.touch_out(exit_station)
       expect(subject.in_journey?).to eq false
     end
     it "deducts the min amount from the card" do
       subject.top_up(5)
-      subject.touch_in(station)
-      expect{ subject.touch_out(station) }.to change {subject.balance}.by(-OysterCard::MIN_CHARGE)
+      subject.touch_in(entry_station)
+      expect{ subject.touch_out(exit_station) }.to change {subject.balance}.by(-OysterCard::MIN_CHARGE)
     end
     it "stores/remembers the exit station at touch out" do
       subject.top_up(5)
-      subject.touch_in(station)
-      subject.touch_out(station)
-      expect(subject.exit_station).to eq station
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.exit_station).to eq exit_station
     end
-
-
+    it "stores a journey hash" do
+      subject.top_up(5)
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.journey_history).to include journey
+    end
   end
 end
