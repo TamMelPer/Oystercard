@@ -1,13 +1,19 @@
 require 'station'
+
 describe Station do
+  let(:name) { double :name}
+  let(:zone) { double :zone}
+  subject {Station.new(name, zone)}
 
-  subject {described_class.new(name: "Old Street", zone: 1)}
-
-  it 'knows its name' do
-    expect(subject.name).to eq("Old Street")
+  it "creates an instance of Station" do
+    expect(subject).to be_instance_of Station
   end
 
-  it 'knows its zone' do
-    expect(subject.zone).to eq(1)
+  it "initializes with a name" do
+    expect(subject.name).to be name
+  end
+
+  it "initializes with a zone" do
+    expect(subject.zone).to be zone
   end
 end
