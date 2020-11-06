@@ -17,19 +17,23 @@ attr_reader :balance, :journey, :exit_station, :entry_station, :journey_history
     @balance += amount
   end
 
-  def in_journey?
-    @journey != nil
-  end
+  #def in_journey?
+#at init, journey is nil, and 22 evaluates to false
+    #@journey != nil
+    # if @journey.complete
+    # @journey == @journey.complete?
+  #end
+
 
   def touch_in(station)
-    end_journey if @journey
+    end_journey if @journey #if this statement evaluates to false, then look at line 31, 32
+                            #else, if it evaluates to true, then carry out line 25
     # if @journey != nil
     #   deduct(@journey.fare)
     # @journey_history << @journey
     # end
     raise "Not enough funds" if @balance < MIN_BALANCE
     @journey = Journey.new(station)
-
   end
 
   def touch_out(station)

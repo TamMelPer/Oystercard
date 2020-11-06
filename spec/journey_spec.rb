@@ -34,4 +34,8 @@ subject {Journey.new(entry_station)}
     expect(test.fare).to eq Journey::PENALTY
   end
 
+  it "will check if the journey is complete" do
+    test_journey = Journey.new
+    expect(test_journey.complete?).to eq false
+  end
 end

@@ -56,7 +56,8 @@ describe OysterCard do
     it "when touch_in, the journey has started" do
       subject.top_up(OysterCard::MIN_BALANCE)
       subject.touch_in(entry_station)
-      expect(subject.in_journey?).to eq true
+      #expect(subject.in_journey?).to eq true
+      expect(subject.journey).to_not be nil
     end
     it "checks that there is the min amount needed" do
       subject.top_up(OysterCard::MIN_BALANCE)
@@ -76,14 +77,15 @@ describe OysterCard do
       subject.top_up(5)
       subject.touch_in(entry_station)
       subject.touch_out(exit_station)
-      expect(subject.in_journey?).to eq false
+      #expect(subject.in_journey?).to eq false
+      expect(subject.journey).to be nil
     end
     it "deducts the min amount from the card" do
       subject.top_up(5)
       subject.touch_in(entry_station)
       expect{ subject.touch_out(exit_station) }.to change {subject.balance}.by(-OysterCard::MIN_CHARGE)
     end
-    it "stores a journey hash" do
+    it "stores a journey" do
       subject.top_up(5)
       subject.touch_in(entry_station)
       expect{ subject.touch_out(exit_station) }.to change { subject.journey_history.length }.by 1
